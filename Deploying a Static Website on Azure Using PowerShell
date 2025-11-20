@@ -1,0 +1,47 @@
+Deploying a Static Website on Azure Using PowerShell 
+Today I automated the full workflow of deploying a static website on Azure using only Azure PowerShell 
+
+1. Create a Storage Account
+Static websites require a StorageV2 account with public blob access enabled.
+New-AzStorageAccount `
+    -Name "az104storage02" `
+    -ResourceGroupName "azure-104-rg" `
+    -Location "EastUS" `
+    -SkuName "Standard_LRS" `
+    -AllowBlobPublicAccess $true `
+    -Kind StorageV2
+
+2. Fetch Storage Account Context
+This context object is needed for all further operations.
+$storageAccount = Get-AzStorageAccount `
+    -ResourceGroupName "azure-104-rg" `
+    -Name "az104sanjeevdemostorage"
+$ctx = $storageAccount.Context
+
+3. Enable Static Website Hosting
+Azure will auto-create a special container named $web.
+Enable-AzStorageStaticWebsite `
+    -Context $ctx `
+    -IndexDocument "index.html" `
+    -ErrorDocument404Path "error.html"
+
+4. Upload the Website Files
+Upload index.html into the $web container.
+Set-AzStorageBlobContent `
+    -File "C:\Users\User\Desktop\index.html" `
+    -Container "`$web" `
+    -Context $ctx
+
+5. Get the Website URL
+This gives you your public static website endpoint.
+$storageAccount = Get-AzStorageAccount `
+    -ResourceGroupName "azure-104-rg" `
+    -Name "az104sanjeevdemostorage"
+$storageAccount.PrimaryEndpoints.Web
+
+Takeaway
+✔ Storage Account created
+ ✔ Static Website hosting enabled
+ ✔ index.html uploaded
+ ✔ Public endpoint retrieved
+Your site is now live on Azure, just like AWS S3 static hosting — but fully automated using PowerShell.
